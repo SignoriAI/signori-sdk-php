@@ -1,5 +1,5 @@
 {
-    "name": "signvault/signvault-php",
+    "name": "kmorganisation/signvault-sdk-php",
     "description": "Official PHP SDK for the SignVault e-signature API",
     "type": "library",
     "license": "MIT",
