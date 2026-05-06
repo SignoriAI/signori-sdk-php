@@ -9,6 +9,7 @@ use SignVault\HttpClient\CurlHttpClient;
 use SignVault\HttpClient\HttpClientInterface;
 use SignVault\Resources\ApiKeys;
 use SignVault\Resources\Documents;
+use SignVault\Resources\IframeOrigins;
 use SignVault\Resources\Signers;
 use SignVault\Resources\Templates;
 use SignVault\Resources\Webhooks;
@@ -37,6 +38,7 @@ final class SignVault
     private Templates $templates;
     private Webhooks $webhooks;
     private ApiKeys $apiKeys;
+    private IframeOrigins $iframeOrigins;
 
     private function __construct(
         string $apiKey,
@@ -58,8 +60,9 @@ final class SignVault
         $this->documents = new Documents($this);
         $this->signers   = new Signers($this);
         $this->templates = new Templates($this);
-        $this->webhooks  = new Webhooks($this);
-        $this->apiKeys   = new ApiKeys($this);
+        $this->webhooks      = new Webhooks($this);
+        $this->apiKeys       = new ApiKeys($this);
+        $this->iframeOrigins = new IframeOrigins($this);
     }
 
     /**
@@ -121,9 +124,10 @@ final class SignVault
             'documents' => $this->documents,
             'signers'   => $this->signers,
             'templates' => $this->templates,
-            'webhooks'  => $this->webhooks,
-            'apiKeys'   => $this->apiKeys,
-            default     => throw new \InvalidArgumentException("Unknown property: {$name}"),
+            'webhooks'      => $this->webhooks,
+            'apiKeys'       => $this->apiKeys,
+            'iframeOrigins' => $this->iframeOrigins,
+            default         => throw new \InvalidArgumentException("Unknown property: {$name}"),
         };
     }
 
