@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SignVault\Resources;
 
 use SignVault\Responses\AuditTrailResponse;
+use SignVault\Responses\DocumentFieldResponse;
 use SignVault\Responses\DocumentResponse;
 use SignVault\Responses\PaginatedResponse;
 use SignVault\Responses\SignerResponse;
@@ -159,5 +160,45 @@ final class Documents
         $data = $this->client->get("/api/v1/documents/{$id}/signers");
         $items = is_array($data['items'] ?? null) ? $data['items'] : $data;
         return array_map(fn(array $s) => SignerResponse::from($s), $items);
+    }
+
+    /**
+     * Replace the field layout on a document — the call is destructive and
+     * overwrites any previously-placed fields.
+     *
+     * Use this to anchor signatures, initials, or other input fields at a
+     * known position on the PDF before calling ``send()``. Without it the
+     * signing service falls back to a hardcoded position at the top of
+     * page 1.
+     *
+     * Coordinates use PDF points with the origin at the **top-left** of
+     * each page (UI convention); the signing service flips them at render
+     * time. Standard US Letter is 612x792pt; A4 is 595x842pt.
+     *
+     * @param  string $documentId
+     * @param  array<int, array{
+     *     field_type: string,
+     *     assigned_to?: string,
+     *     page: int,
+     *     x: float|int,
+     *     y: float|int,
+     *     width: float|int,
+     *     height: float|int,
+     *     required?: bool,
+     *     field_label?: string,
+     * }> $fields
+     * @return list<DocumentFieldResponse>
+     */
+    public function placeFields(string $documentId, array $fields): array
+    {
+        $data = $this->client->put(
+            "/api/v1/documents/{$documentId}/fields",
+            ['fields' => $fields],
+        );
+        $items = is_array($data['fields'] ?? null) ? $data['fields'] : [];
+        return array_map(
+            static fn (array $f): DocumentFieldResponse => DocumentFieldResponse::from($f),
+            $items,
+        );
     }
 }

@@ -55,6 +55,22 @@ abstract class UnitTestCase extends TestCase
         ], $overrides);
     }
 
+    protected function documentFieldFixture(array $overrides = []): array
+    {
+        return array_merge([
+            'id'          => 'fld_1',
+            'document_id' => 'doc_abc123',
+            'field_type'  => 'signature',
+            'assigned_to' => 'signer_1',
+            'page'        => 1,
+            'x'           => 60.0,
+            'y'           => 700.0,
+            'width'       => 240.0,
+            'height'      => 50.0,
+            'required'    => true,
+        ], $overrides);
+    }
+
     protected function signerFixture(array $overrides = []): array
     {
         return array_merge([
