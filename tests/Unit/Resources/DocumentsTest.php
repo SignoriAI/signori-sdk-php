@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SignVault\Tests\Unit\Resources;
 
+use SignVault\Responses\DocumentFieldResponse;
 use SignVault\Responses\DocumentResponse;
 use SignVault\Responses\PaginatedResponse;
 use SignVault\Responses\AuditTrailResponse;
@@ -203,6 +204,35 @@ final class DocumentsTest extends UnitTestCase
         $req = $this->http->lastRequest();
         $this->assertSame('GET', $req['method']);
         $this->assertStringContainsString('doc_abc123/download', $req['url']);
+    }
+
+    // ── place fields ──────────────────────────────────────────────────────────
+
+    public function test_place_fields_puts_to_fields_endpoint(): void
+    {
+        $this->http->enqueue(200, $this->envelope([
+            'fields' => [
+                $this->documentFieldFixture(['page' => 1]),
+                $this->documentFieldFixture(['page' => 2, 'id' => 'fld_2']),
+            ],
+        ]));
+
+        $fields = $this->sv->documents->placeFields('doc_abc123', [
+            ['field_type' => 'signature', 'assigned_to' => 'signer_1', 'page' => 1, 'x' => 60, 'y' => 700, 'width' => 240, 'height' => 50],
+            ['field_type' => 'signature', 'assigned_to' => 'signer_1', 'page' => 2, 'x' => 60, 'y' => 700, 'width' => 240, 'height' => 50],
+        ]);
+
+        $req = $this->http->lastRequest();
+        $this->assertSame('PUT', $req['method']);
+        $this->assertStringContainsString('doc_abc123/fields', $req['url']);
+        $this->assertCount(2, $req['json']['fields']);
+        $this->assertSame('signature', $req['json']['fields'][0]['field_type']);
+
+        $this->assertCount(2, $fields);
+        $this->assertContainsOnlyInstancesOf(DocumentFieldResponse::class, $fields);
+        $this->assertSame(1, $fields[0]->page);
+        $this->assertSame(2, $fields[1]->page);
+        $this->assertSame('signer_1', $fields[0]->assignedTo);
     }
 
     // ── toArray ───────────────────────────────────────────────────────────────

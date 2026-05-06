@@ -154,6 +154,12 @@ final class SignVault
     }
 
     /** @internal */
+    public function put(string $path, array $body = []): array
+    {
+        return $this->request('PUT', $path, json: $body);
+    }
+
+    /** @internal */
     public function delete(string $path): array
     {
         return $this->request('DELETE', $path);
