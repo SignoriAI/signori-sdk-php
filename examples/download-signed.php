@@ -4,15 +4,15 @@
  * Example: Download the signed PDF once a document is completed.
  *
  * Run:
- *   SIGNVAULT_API_KEY=your-key php examples/download-signed.php doc_your_id_here
+ *   SIGNORI_API_KEY=your-key php examples/download-signed.php doc_your_id_here
  */
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use SignVault\Exceptions\SignVaultException;
-use SignVault\SignVault;
+use Signori\Exceptions\SignoriException;
+use Signori\Signori;
 
 $docId = $argv[1] ?? null;
 if ($docId === null) {
@@ -20,7 +20,7 @@ if ($docId === null) {
     exit(1);
 }
 
-$sv = SignVault::client();
+$sv = Signori::client();
 
 try {
     // ── Check status first ────────────────────────────────────────────────────
@@ -50,7 +50,7 @@ try {
         printf("  %s  %-30s  %s\n", $ts, $type, $actor);
     }
 
-} catch (SignVaultException $e) {
+} catch (SignoriException $e) {
     fprintf(STDERR, "Error: %s\n", $e->getMessage());
     exit(1);
 }

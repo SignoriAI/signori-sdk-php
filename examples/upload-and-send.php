@@ -4,20 +4,20 @@
  * Example: Upload a PDF and send it for signing.
  *
  * Run:
- *   SIGNVAULT_API_KEY=your-key php examples/upload-and-send.php
+ *   SIGNORI_API_KEY=your-key php examples/upload-and-send.php
  */
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use SignVault\Exceptions\SignVaultException;
-use SignVault\SignVault;
+use Signori\Exceptions\SignoriException;
+use Signori\Signori;
 
 // ── Client ───────────────────────────────────────────────────────────────────
-// API key is read from SIGNVAULT_API_KEY env var.
-// Pass it explicitly: SignVault::client('sv_live_...')
-$sv = SignVault::client();
+// API key is read from SIGNORI_API_KEY env var.
+// Pass it explicitly: Signori::client('sv_live_...')
+$sv = Signori::client();
 
 try {
     // ── 1. Upload ─────────────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ try {
     echo "  Status: {$doc->status}\n";
     echo "Done. Document ID: {$doc->id}\n";
 
-} catch (SignVaultException $e) {
+} catch (SignoriException $e) {
     fprintf(STDERR, "Error [%s]: %s (request_id: %s)\n",
         get_class($e), $e->getMessage(), $e->requestId ?? 'n/a');
     exit(1);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Responses;
+namespace Signori\Responses;
 
 /**
  * A field placed on a document — e.g. a signature box at a known position

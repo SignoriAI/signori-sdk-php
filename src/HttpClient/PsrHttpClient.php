@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SignVault\HttpClient;
+namespace Signori\HttpClient;
 
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -15,11 +15,11 @@ use Psr\Http\Message\StreamFactoryInterface;
  *
  *   use GuzzleHttp\Client;
  *   use GuzzleHttp\Psr7\HttpFactory;
- *   use SignVault\HttpClient\PsrHttpClient;
+ *   use Signori\HttpClient\PsrHttpClient;
  *
  *   $factory = new HttpFactory();
  *   $transport = new PsrHttpClient(new Client(), $factory, $factory);
- *   $sv = SignVault::client()->withHttpClient($transport);
+ *   $sv = Signori::client()->withHttpClient($transport);
  */
 final class PsrHttpClient implements HttpClientInterface
 {

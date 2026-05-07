@@ -1,4 +1,4 @@
 <?php declare(strict_types=1);
-namespace SignVault\Exceptions;
+namespace Signori\Exceptions;
 /** Thrown on 404 — document, signer, template, or other resource not found. */
-class NotFoundException extends SignVaultException {}
+class NotFoundException extends SignoriException {}

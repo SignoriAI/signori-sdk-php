@@ -2,51 +2,51 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Tests\Unit;
+namespace Signori\Tests\Unit;
 
-use SignVault\Exceptions\AuthException;
-use SignVault\Exceptions\NotFoundException;
-use SignVault\Exceptions\RateLimitException;
-use SignVault\Exceptions\ValidationException;
-use SignVault\Exceptions\ApiException;
-use SignVault\Exceptions\SignVaultException;
-use SignVault\SignVault;
-use SignVault\Tests\MockHttpClient;
-use SignVault\Tests\UnitTestCase;
+use Signori\Exceptions\AuthException;
+use Signori\Exceptions\NotFoundException;
+use Signori\Exceptions\RateLimitException;
+use Signori\Exceptions\ValidationException;
+use Signori\Exceptions\ApiException;
+use Signori\Exceptions\SignoriException;
+use Signori\Signori;
+use Signori\Tests\MockHttpClient;
+use Signori\Tests\UnitTestCase;
 
 /**
  * Tests for the core client: env-based config, auth headers, error mapping,
  * retry logic, and URL construction.
  */
-final class SignVaultClientTest extends UnitTestCase
+final class SignoriClientTest extends UnitTestCase
 {
     // ── Construction ─────────────────────────────────────────────────────────
 
     public function test_throws_when_api_key_empty(): void
     {
-        $this->expectException(SignVaultException::class);
-        SignVault::client('');
+        $this->expectException(SignoriException::class);
+        Signori::client('');
     }
 
     public function test_reads_api_key_from_environment(): void
     {
-        putenv('SIGNVAULT_API_KEY=env-key-xyz');
-        $sv = SignVault::client();
-        $this->assertInstanceOf(SignVault::class, $sv);
-        putenv('SIGNVAULT_API_KEY'); // unset
+        putenv('SIGNORI_API_KEY=env-key-xyz');
+        $sv = Signori::client();
+        $this->assertInstanceOf(Signori::class, $sv);
+        putenv('SIGNORI_API_KEY'); // unset
     }
 
     public function test_reads_base_url_from_environment(): void
     {
-        putenv('SIGNVAULT_API_KEY=env-key');
-        putenv('SIGNVAULT_BASE_URL=https://custom.api');
+        putenv('SIGNORI_API_KEY=env-key');
+        putenv('SIGNORI_BASE_URL=https://custom.api');
         $http = new MockHttpClient();
         $http->enqueue(200, $this->envelope($this->documentFixture()));
-        $sv = SignVault::client()->withHttpClient($http);
+        $sv = Signori::client()->withHttpClient($http);
         $sv->documents->get('doc_1');
         $this->assertStringStartsWith('https://custom.api', $http->lastRequest()['url']);
-        putenv('SIGNVAULT_API_KEY');
-        putenv('SIGNVAULT_BASE_URL');
+        putenv('SIGNORI_API_KEY');
+        putenv('SIGNORI_BASE_URL');
     }
 
     // ── Authorization header ──────────────────────────────────────────────────
@@ -64,7 +64,7 @@ final class SignVaultClientTest extends UnitTestCase
         $this->http->enqueue(200, $this->envelope($this->documentFixture()));
         $this->sv->documents->get('doc_abc123');
         $headers = $this->http->lastRequest()['headers'];
-        $this->assertStringStartsWith('signvault-php/', $headers['User-Agent']);
+        $this->assertStringStartsWith('signori-php/', $headers['User-Agent']);
     }
 
     // ── URL construction ──────────────────────────────────────────────────────
@@ -90,7 +90,7 @@ final class SignVaultClientTest extends UnitTestCase
     {
         $http = new MockHttpClient();
         $http->enqueue(200, $this->envelope($this->documentFixture()));
-        $sv = SignVault::client('key', 'https://api.test/')->withHttpClient($http);
+        $sv = Signori::client('key', 'https://api.test/')->withHttpClient($http);
         $sv->documents->get('d1');
         $url = $http->lastRequest()['url'];
         $this->assertStringNotContainsString('//', str_replace('https://', '', $url));
@@ -139,7 +139,7 @@ final class SignVaultClientTest extends UnitTestCase
         $this->http->enqueue(429, ['error' => ['code' => 'RATE_LIMITED', 'message' => 'Slow down']]);
         $this->http->enqueue(429, ['error' => ['code' => 'RATE_LIMITED', 'message' => 'Slow down']]);
         $this->expectException(RateLimitException::class);
-        $sv = SignVault::client('key', 'https://api.test', maxRetries: 0)
+        $sv = Signori::client('key', 'https://api.test', maxRetries: 0)
             ->withHttpClient($this->http);
         $sv->documents->get('x');
     }
@@ -149,7 +149,7 @@ final class SignVaultClientTest extends UnitTestCase
         $this->http->enqueue(500, ['error' => ['code' => 'INTERNAL_ERROR', 'message' => 'Boom']]);
         $this->http->enqueue(500, ['error' => ['code' => 'INTERNAL_ERROR', 'message' => 'Boom']]);
         $this->expectException(ApiException::class);
-        $sv = SignVault::client('key', 'https://api.test', maxRetries: 0)
+        $sv = Signori::client('key', 'https://api.test', maxRetries: 0)
             ->withHttpClient($this->http);
         $sv->documents->get('x');
     }

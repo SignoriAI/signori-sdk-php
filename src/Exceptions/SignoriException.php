@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Exceptions;
+namespace Signori\Exceptions;
 
 use RuntimeException;
 
 /**
- * Base exception for all SignVault SDK errors.
+ * Base exception for all Signori SDK errors.
  */
-class SignVaultException extends RuntimeException
+class SignoriException extends RuntimeException
 {
     public function __construct(
         string               $message  = '',

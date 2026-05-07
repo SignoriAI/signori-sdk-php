@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Responses;
+namespace Signori\Responses;
 
 /**
  * Immutable response object. All properties are readonly.

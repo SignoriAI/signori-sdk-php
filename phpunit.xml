@@ -21,7 +21,7 @@
     <php>
         <!-- Integration tests read these from the environment.
              Set them in .env.testing or export before running. -->
-        <env name="SIGNVAULT_API_KEY" value=""/>
-        <env name="SIGNVAULT_BASE_URL" value="http://localhost:8000"/>
+        <env name="SIGNORI_API_KEY" value=""/>
+        <env name="SIGNORI_BASE_URL" value="http://localhost:8000"/>
     </php>
 </phpunit>

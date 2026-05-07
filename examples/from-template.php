@@ -4,17 +4,17 @@
  * Example: Create a document from a saved template, pre-fill fields, send.
  *
  * Run:
- *   SIGNVAULT_API_KEY=your-key php examples/from-template.php
+ *   SIGNORI_API_KEY=your-key php examples/from-template.php
  */
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use SignVault\Exceptions\SignVaultException;
-use SignVault\SignVault;
+use Signori\Exceptions\SignoriException;
+use Signori\Signori;
 
-$sv = SignVault::client();
+$sv = Signori::client();
 
 try {
     // ── 1. Find the template by listing and filtering by name ─────────────────
@@ -28,7 +28,7 @@ try {
     }
 
     if ($template === null) {
-        echo "No NDA template found. Create one in the SignVault dashboard first.\n";
+        echo "No NDA template found. Create one in the Signori dashboard first.\n";
         exit(0);
     }
 
@@ -58,7 +58,7 @@ try {
     );
     echo "Sent. Status: {$doc->status}\n";
 
-} catch (SignVaultException $e) {
+} catch (SignoriException $e) {
     fprintf(STDERR, "Error: %s\n", $e->getMessage());
     exit(1);
 }

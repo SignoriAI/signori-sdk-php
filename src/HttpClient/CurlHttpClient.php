@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SignVault\HttpClient;
+namespace Signori\HttpClient;
 
-use SignVault\Exceptions\SignVaultException;
+use Signori\Exceptions\SignoriException;
 
 /**
  * Default HTTP transport using PHP's cURL extension.
@@ -52,7 +52,7 @@ final class CurlHttpClient implements HttpClientInterface
         array  $multipart = [],
     ): array {
         if (! extension_loaded('curl')) {
-            throw new SignVaultException(
+            throw new SignoriException(
                 'The cURL extension is required. Install it or provide a custom HttpClientInterface.'
             );
         }
@@ -97,7 +97,7 @@ final class CurlHttpClient implements HttpClientInterface
         curl_close($ch);
 
         if ($errno !== 0) {
-            throw new SignVaultException("cURL error [{$errno}]: {$error}", 0, null, $url);
+            throw new SignoriException("cURL error [{$errno}]: {$error}", 0, null, $url);
         }
 
         return [$status, (string) $body];

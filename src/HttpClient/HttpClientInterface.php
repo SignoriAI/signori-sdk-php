@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SignVault\HttpClient;
+namespace Signori\HttpClient;
 
 /**
  * Minimal HTTP transport interface used internally by the SDK.

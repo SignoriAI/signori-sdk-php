@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Resources;
+namespace Signori\Resources;
 
-use SignVault\Responses\DocumentResponse;
-use SignVault\Responses\PaginatedResponse;
-use SignVault\Responses\TemplateResponse;
-use SignVault\SignVault;
+use Signori\Responses\DocumentResponse;
+use Signori\Responses\PaginatedResponse;
+use Signori\Responses\TemplateResponse;
+use Signori\Signori;
 
 final class Templates
 {
-    public function __construct(private readonly SignVault $client) {}
+    public function __construct(private readonly Signori $client) {}
 
     /**
      * List all templates (system + company).

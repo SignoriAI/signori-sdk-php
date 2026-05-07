@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Tests;
+namespace Signori\Tests;
 
 use PHPUnit\Framework\TestCase;
-use SignVault\SignVault;
+use Signori\Signori;
 
 /**
  * Base class for unit tests — provides a pre-wired client + mock transport.
@@ -13,16 +13,16 @@ use SignVault\SignVault;
 abstract class UnitTestCase extends TestCase
 {
     protected MockHttpClient $http;
-    protected SignVault $sv;
+    protected Signori $sv;
 
     protected function setUp(): void
     {
         $this->http = new MockHttpClient();
-        $this->sv   = SignVault::client('test-key-unit', 'https://api.test')
+        $this->sv   = Signori::client('test-key-unit', 'https://api.test')
             ->withHttpClient($this->http);
     }
 
-    /** Wrap a response body in the standard SignVault envelope. */
+    /** Wrap a response body in the standard Signori envelope. */
     protected function envelope(array $data, ?string $requestId = null): array
     {
         return ['data' => $data, 'request_id' => $requestId ?? 'req_test'];
