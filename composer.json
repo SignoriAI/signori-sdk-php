@@ -1,14 +1,14 @@
 {
-    "name": "kmorganisation/signvault-sdk-php",
-    "description": "Official PHP SDK for the SignVault e-signature API",
+    "name": "kmorganisation/signori-sdk-php",
+    "description": "Official PHP SDK for the Signori e-signature API",
     "type": "library",
     "license": "MIT",
-    "keywords": ["signvault", "e-signature", "esign", "pdf", "signing"],
-    "homepage": "https://github.com/kmorganisation/signvault-sdk-php",
+    "keywords": ["signori", "e-signature", "esign", "pdf", "signing"],
+    "homepage": "https://github.com/kmorganisation/signori-sdk-php",
     "authors": [
         {
-            "name": "SignVault",
-            "email": "dev@signvault.com"
+            "name": "Signori",
+            "email": "dev@signori.ai"
         }
     ],
     "require": {
@@ -23,12 +23,12 @@
     },
     "autoload": {
         "psr-4": {
-            "SignVault\\": "src/"
+            "Signori\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "SignVault\\Tests\\": "tests/"
+            "Signori\\Tests\\": "tests/"
         }
     },
     "scripts": {

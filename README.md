@@ -1,6 +1,6 @@
-# SignVault PHP SDK
+# Signori PHP SDK
 
-Official PHP SDK for the [SignVault](https://signvault.com) e-signature API.
+Official PHP SDK for the [Signori](https://signori.ai) e-signature API.
 
 **Requirements:** PHP 8.1+ · cURL extension (standard on all hosts)  
 **Dependencies:** PSR interfaces only — no Guzzle, no Symfony, no framework lock-in
@@ -10,7 +10,7 @@ Official PHP SDK for the [SignVault](https://signvault.com) e-signature API.
 ## Installation
 
 ```bash
-composer require signvault/signvault-php
+composer require signori/signori-php
 ```
 
 The SDK ships with its own cURL-based HTTP client, so no extra packages are needed. If you already use Guzzle or Symfony HttpClient you can [swap in your own transport](#custom-http-client).
@@ -20,9 +20,9 @@ The SDK ships with its own cURL-based HTTP client, so no extra packages are need
 ## Quick start
 
 ```php
-use SignVault\SignVault;
+use Signori\Signori;
 
-$sv = SignVault::client('sv_live_your_api_key');
+$sv = Signori::client('sv_live_your_api_key');
 
 // Upload a PDF
 $doc = $sv->documents->upload('/path/to/contract.pdf', 'Master Services Agreement');
@@ -43,20 +43,20 @@ echo "Sent! Document ID: {$doc->id}\n";
 
 ```bash
 # .env (copy from .env.example)
-SIGNVAULT_API_KEY=sv_live_your_api_key
-SIGNVAULT_BASE_URL=https://api.signvault.com   # optional, this is the default
+SIGNORI_API_KEY=sv_live_your_api_key
+SIGNORI_BASE_URL=https://api.signori.ai   # optional, this is the default
 ```
 
 ```php
-$sv = SignVault::client(); // reads SIGNVAULT_API_KEY automatically
+$sv = Signori::client(); // reads SIGNORI_API_KEY automatically
 ```
 
 ### Explicitly
 
 ```php
-$sv = SignVault::client(
+$sv = Signori::client(
     apiKey:     'sv_live_your_api_key',
-    baseUrl:    'https://api.signvault.com', // or http://localhost:8000 for local dev
+    baseUrl:    'https://api.signori.ai', // or http://localhost:8000 for local dev
     timeout:    30,                          // seconds
     maxRetries: 1,                           // auto-retry on 429 / 5xx
 );
@@ -217,7 +217,7 @@ $doc = $sv->templates->createDocument(
 
 ```php
 $wh = $sv->webhooks->create(
-    'https://yourapp.com/webhooks/signvault',
+    'https://yourapp.com/webhooks/signori',
     events: [
         'document.completed',
         'document.declined',
@@ -233,11 +233,11 @@ echo "Webhook ID: {$wh->id}\n";
 
 ```php
 // webhook-handler.php
-use SignVault\Resources\Webhooks;
+use Signori\Resources\Webhooks;
 
 $payload   = file_get_contents('php://input');
-$signature = $_SERVER['HTTP_X_SIGNVAULT_SIGNATURE'] ?? '';
-$secret    = getenv('SIGNVAULT_WEBHOOK_SECRET');
+$signature = $_SERVER['HTTP_X_SIGNORI_SIGNATURE'] ?? '';
+$secret    = getenv('SIGNORI_WEBHOOK_SECRET');
 
 if (! Webhooks::verify($payload, $signature, $secret)) {
     http_response_code(403);
@@ -264,12 +264,12 @@ See [`examples/webhook-handler.php`](examples/webhook-handler.php) for a complet
 ## Error handling
 
 ```php
-use SignVault\Exceptions\AuthException;
-use SignVault\Exceptions\NotFoundException;
-use SignVault\Exceptions\ValidationException;
-use SignVault\Exceptions\RateLimitException;
-use SignVault\Exceptions\ApiException;
-use SignVault\Exceptions\SignVaultException;
+use Signori\Exceptions\AuthException;
+use Signori\Exceptions\NotFoundException;
+use Signori\Exceptions\ValidationException;
+use Signori\Exceptions\RateLimitException;
+use Signori\Exceptions\ApiException;
+use Signori\Exceptions\SignoriException;
 
 try {
     $doc = $sv->documents->get('doc_xyz');
@@ -283,7 +283,7 @@ try {
     echo "Rate limited — slow down.\n";
 } catch (ApiException $e) {
     echo "Server error: {$e->getMessage()}\n";
-} catch (SignVaultException $e) {
+} catch (SignoriException $e) {
     // Catches any of the above + network/config errors
     echo "SDK error: {$e->getMessage()}\n";
 }
@@ -292,7 +292,7 @@ try {
 All exceptions expose:
 - `getMessage()` — human-readable description
 - `getCode()` — HTTP status code
-- `$e->requestId` — SignVault request ID (include in support tickets)
+- `$e->requestId` — Signori request ID (include in support tickets)
 
 ---
 
@@ -303,21 +303,21 @@ Swap in Guzzle (or any PSR-18 client) if you already have one:
 ```php
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
-use SignVault\HttpClient\PsrHttpClient;
+use Signori\HttpClient\PsrHttpClient;
 
 $factory   = new HttpFactory();
 $transport = new PsrHttpClient(new Client(), $factory, $factory);
-$sv        = SignVault::client()->withHttpClient($transport);
+$sv        = Signori::client()->withHttpClient($transport);
 ```
 
 Or inject a mock in tests:
 
 ```php
-use SignVault\Tests\MockHttpClient;
+use Signori\Tests\MockHttpClient;
 
 $mock = new MockHttpClient();
 $mock->enqueue(200, ['data' => ['id' => 'doc_1', 'title' => 'Test', ...]]);
-$sv   = SignVault::client('test-key')->withHttpClient($mock);
+$sv   = Signori::client('test-key')->withHttpClient($mock);
 ```
 
 ---
@@ -332,13 +332,13 @@ composer install
 composer test:unit
 
 # Integration tests (hits real API)
-SIGNVAULT_API_KEY=sv_live_... composer test:integration
+SIGNORI_API_KEY=sv_live_... composer test:integration
 
 # All tests
 composer test
 ```
 
-Integration tests are automatically skipped when `SIGNVAULT_API_KEY` is not set, so `composer test` is always safe to run in CI without credentials.
+Integration tests are automatically skipped when `SIGNORI_API_KEY` is not set, so `composer test` is always safe to run in CI without credentials.
 
 ---
 

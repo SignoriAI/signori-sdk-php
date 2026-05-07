@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Resources;
+namespace Signori\Resources;
 
-use SignVault\Exceptions\SignVaultException;
-use SignVault\Responses\PaginatedResponse;
-use SignVault\Responses\WebhookResponse;
-use SignVault\SignVault;
+use Signori\Exceptions\SignoriException;
+use Signori\Responses\PaginatedResponse;
+use Signori\Responses\WebhookResponse;
+use Signori\Signori;
 
 final class Webhooks
 {
-    public function __construct(private readonly SignVault $client) {}
+    public function __construct(private readonly Signori $client) {}
 
     /**
      * Register a new webhook endpoint.
@@ -71,7 +71,7 @@ final class Webhooks
      * Usage in your webhook handler:
      *
      *   $payload   = file_get_contents('php://input');
-     *   $signature = $_SERVER['HTTP_X_SIGNVAULT_SIGNATURE'] ?? '';
+     *   $signature = $_SERVER['HTTP_X_SIGNORI_SIGNATURE'] ?? '';
      *   $secret    = 'your-webhook-secret';
      *
      *   if (! Webhooks::verify($payload, $signature, $secret)) {
@@ -80,7 +80,7 @@ final class Webhooks
      *   }
      *
      * @param  string $payload   Raw request body (do not decode).
-     * @param  string $signature The X-SignVault-Signature header value.
+     * @param  string $signature The X-Signori-Signature header value.
      * @param  string $secret    Your webhook signing secret.
      */
     public static function verify(string $payload, string $signature, string $secret): bool
@@ -104,14 +104,14 @@ final class Webhooks
     /**
      * Decode the webhook payload and return the event type and data.
      *
-     * @throws SignVaultException if the payload is not valid JSON
+     * @throws SignoriException if the payload is not valid JSON
      * @return array{event: string, data: array<string, mixed>}
      */
     public static function constructEvent(string $payload): array
     {
         $decoded = json_decode($payload, true);
         if (! is_array($decoded)) {
-            throw new SignVaultException('Webhook payload is not valid JSON');
+            throw new SignoriException('Webhook payload is not valid JSON');
         }
         return [
             'event' => (string) ($decoded['event'] ?? ''),

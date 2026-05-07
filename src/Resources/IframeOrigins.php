@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Resources;
+namespace Signori\Resources;
 
-use SignVault\Responses\IframeOriginResponse;
-use SignVault\SignVault;
+use Signori\Responses\IframeOriginResponse;
+use Signori\Signori;
 
 /**
  * Per-company allowlist of origins permitted to embed the signing page in
@@ -19,7 +19,7 @@ use SignVault\SignVault;
  */
 final class IframeOrigins
 {
-    public function __construct(private readonly SignVault $client) {}
+    public function __construct(private readonly Signori $client) {}
 
     /**
      * Add an origin to the company's iframe allowlist. Re-adding a

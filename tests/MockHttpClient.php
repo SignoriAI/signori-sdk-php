@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Tests;
+namespace Signori\Tests;
 
-use SignVault\HttpClient\HttpClientInterface;
+use Signori\HttpClient\HttpClientInterface;
 
 /**
  * In-memory HTTP stub.
@@ -12,7 +12,7 @@ use SignVault\HttpClient\HttpClientInterface;
  * Usage:
  *   $http = new MockHttpClient();
  *   $http->enqueue(200, ['id' => 'doc_1', 'title' => 'Test']);
- *   $sv = SignVault::client('test-key')->withHttpClient($http);
+ *   $sv = Signori::client('test-key')->withHttpClient($http);
  *   // next request returns the queued response; asserts the correct URL/method
  */
 final class MockHttpClient implements HttpClientInterface

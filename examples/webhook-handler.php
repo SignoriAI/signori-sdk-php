@@ -1,26 +1,26 @@
 <?php
 
 /**
- * Example: Receive and verify a SignVault webhook.
+ * Example: Receive and verify a Signori webhook.
  *
  * Drop this file into your web root (e.g. public/webhook.php) and point
- * your SignVault webhook URL at it.
+ * your Signori webhook URL at it.
  *
  * Environment variables expected:
- *   SIGNVAULT_WEBHOOK_SECRET  — the signing secret shown in the dashboard
+ *   SIGNORI_WEBHOOK_SECRET  — the signing secret shown in the dashboard
  */
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use SignVault\Exceptions\SignVaultException;
-use SignVault\Resources\Webhooks;
+use Signori\Exceptions\SignoriException;
+use Signori\Resources\Webhooks;
 
 // ── 1. Read raw body BEFORE any framework decodes it ─────────────────────────
 $payload   = (string) file_get_contents('php://input');
-$signature = $_SERVER['HTTP_X_SIGNVAULT_SIGNATURE'] ?? '';
-$secret    = (string) getenv('SIGNVAULT_WEBHOOK_SECRET');
+$signature = $_SERVER['HTTP_X_SIGNORI_SIGNATURE'] ?? '';
+$secret    = (string) getenv('SIGNORI_WEBHOOK_SECRET');
 
 // ── 2. Verify signature ───────────────────────────────────────────────────────
 if (! Webhooks::verify($payload, $signature, $secret)) {
@@ -32,7 +32,7 @@ if (! Webhooks::verify($payload, $signature, $secret)) {
 // ── 3. Parse the event ────────────────────────────────────────────────────────
 try {
     $event = Webhooks::constructEvent($payload);
-} catch (SignVaultException $e) {
+} catch (SignoriException $e) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid payload']);
     exit;
@@ -63,7 +63,7 @@ switch ($event['event']) {
 
     default:
         // Unknown event type — log and ignore
-        error_log("Unknown SignVault event: {$event['event']}");
+        error_log("Unknown Signori event: {$event['event']}");
 }
 
 // ── 5. Acknowledge ────────────────────────────────────────────────────────────

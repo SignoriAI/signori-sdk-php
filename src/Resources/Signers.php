@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Resources;
+namespace Signori\Resources;
 
-use SignVault\Responses\SignerResponse;
-use SignVault\SignVault;
+use Signori\Responses\SignerResponse;
+use Signori\Signori;
 
 final class Signers
 {
-    public function __construct(private readonly SignVault $client) {}
+    public function __construct(private readonly Signori $client) {}
 
     /**
      * Add a signer to an existing document.

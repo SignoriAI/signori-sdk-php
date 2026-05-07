@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Tests\Unit\HttpClient;
+namespace Signori\Tests\Unit\HttpClient;
 
 use PHPUnit\Framework\TestCase;
-use SignVault\HttpClient\PsrHttpClient;
+use Signori\HttpClient\PsrHttpClient;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use Psr\Http\Client\ClientInterface;

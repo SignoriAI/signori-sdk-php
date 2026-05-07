@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Resources;
+namespace Signori\Resources;
 
-use SignVault\Responses\ApiKeyResponse;
-use SignVault\Responses\PaginatedResponse;
-use SignVault\SignVault;
+use Signori\Responses\ApiKeyResponse;
+use Signori\Responses\PaginatedResponse;
+use Signori\Signori;
 
 final class ApiKeys
 {
-    public function __construct(private readonly SignVault $client) {}
+    public function __construct(private readonly Signori $client) {}
 
     /**
      * Create a new API key. The secret value is only returned once — store it.

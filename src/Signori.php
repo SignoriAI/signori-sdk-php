@@ -2,30 +2,30 @@
 
 declare(strict_types=1);
 
-namespace SignVault;
+namespace Signori;
 
-use SignVault\Exceptions\SignVaultException;
-use SignVault\HttpClient\CurlHttpClient;
-use SignVault\HttpClient\HttpClientInterface;
-use SignVault\Resources\ApiKeys;
-use SignVault\Resources\Documents;
-use SignVault\Resources\IframeOrigins;
-use SignVault\Resources\Signers;
-use SignVault\Resources\Templates;
-use SignVault\Resources\Webhooks;
+use Signori\Exceptions\SignoriException;
+use Signori\HttpClient\CurlHttpClient;
+use Signori\HttpClient\HttpClientInterface;
+use Signori\Resources\ApiKeys;
+use Signori\Resources\Documents;
+use Signori\Resources\IframeOrigins;
+use Signori\Resources\Signers;
+use Signori\Resources\Templates;
+use Signori\Resources\Webhooks;
 
 /**
- * SignVault PHP SDK — main client.
+ * Signori PHP SDK — main client.
  *
  * Quick start:
  *
- *   $sv = SignVault::client('your-api-key');
+ *   $sv = Signori::client('your-api-key');
  *   $doc = $sv->documents->upload('/path/to/contract.pdf', 'Master Services Agreement');
  *   $sv->documents->send($doc->id, [
  *       ['email' => 'alice@example.com', 'full_name' => 'Alice Smith'],
  *   ]);
  */
-final class SignVault
+final class Signori
 {
     private string $apiKey;
     private string $baseUrl;
@@ -48,7 +48,7 @@ final class SignVault
         int $maxRetries,
     ) {
         if ($apiKey === '') {
-            throw new SignVaultException('API key must not be empty. Pass it explicitly or set SIGNVAULT_API_KEY.');
+            throw new SignoriException('API key must not be empty. Pass it explicitly or set SIGNORI_API_KEY.');
         }
 
         $this->apiKey    = $apiKey;
@@ -68,9 +68,9 @@ final class SignVault
     /**
      * Create a client from explicit values or environment variables.
      *
-     * @param  string|null $apiKey   Bearer token. Falls back to SIGNVAULT_API_KEY env var.
-     * @param  string|null $baseUrl  API base URL. Falls back to SIGNVAULT_BASE_URL env var,
-     *                               then https://api.signvault.com.
+     * @param  string|null $apiKey   Bearer token. Falls back to SIGNORI_API_KEY env var.
+     * @param  string|null $baseUrl  API base URL. Falls back to SIGNORI_BASE_URL env var,
+     *                               then https://api.signori.ai.
      * @param  int         $timeout  Request timeout in seconds. Default 30.
      * @param  int         $maxRetries Auto-retry count for 429 / network errors. Default 1.
      */
@@ -80,9 +80,9 @@ final class SignVault
         int $timeout = 30,
         int $maxRetries = 1,
     ): self {
-        $resolvedKey = $apiKey ?? (string) getenv('SIGNVAULT_API_KEY');
+        $resolvedKey = $apiKey ?? (string) getenv('SIGNORI_API_KEY');
         $resolvedUrl = $baseUrl
-            ?? ((string) getenv('SIGNVAULT_BASE_URL') ?: 'https://api.signvault.com');
+            ?? ((string) getenv('SIGNORI_BASE_URL') ?: 'https://api.signori.ai');
 
         return new self(
             $resolvedKey,
@@ -99,8 +99,8 @@ final class SignVault
      * Useful for testing (swap in a mock) or if you already have
      * Guzzle / Symfony HttpClient in your project:
      *
-     *   $sv = SignVault::client()->withHttpClient(
-     *       new \SignVault\HttpClient\PsrHttpClient($guzzle, $psr17Factory)
+     *   $sv = Signori::client()->withHttpClient(
+     *       new \Signori\HttpClient\PsrHttpClient($guzzle, $psr17Factory)
      *   );
      */
     public function withHttpClient(HttpClientInterface $client): self
@@ -236,7 +236,7 @@ final class SignVault
         return [
             'Authorization' => "Bearer {$this->apiKey}",
             'Accept'        => 'application/json',
-            'User-Agent'    => 'signvault-php/1.0.0',
+            'User-Agent'    => 'signori-php/1.0.0',
         ];
     }
 
@@ -252,7 +252,7 @@ final class SignVault
     private function handleResponse(int $status, array $body): array
     {
         if ($status >= 200 && $status < 300) {
-            // Unwrap SignVault envelope: {"data": {...}, "request_id": "..."}
+            // Unwrap Signori envelope: {"data": {...}, "request_id": "..."}
             return $body['data'] ?? $body;
         }
 
@@ -261,6 +261,6 @@ final class SignVault
         $message = $error['message'] ?? "HTTP {$status}";
         $reqId   = $body['request_id'] ?? null;
 
-        throw Exceptions\SignVaultException::fromApiError($status, $code, $message, $reqId);
+        throw Exceptions\SignoriException::fromApiError($status, $code, $message, $reqId);
     }
 }

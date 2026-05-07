@@ -2,58 +2,58 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Tests\Integration;
+namespace Signori\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
-use SignVault\Exceptions\NotFoundException;
-use SignVault\Responses\DocumentResponse;
-use SignVault\Responses\SignerResponse;
-use SignVault\SignVault;
+use Signori\Exceptions\NotFoundException;
+use Signori\Responses\DocumentResponse;
+use Signori\Responses\SignerResponse;
+use Signori\Signori;
 
 /**
  * Integration tests — hit the real API.
  *
- * These tests are SKIPPED automatically unless SIGNVAULT_API_KEY is set.
+ * These tests are SKIPPED automatically unless SIGNORI_API_KEY is set.
  *
- * NOTE: The SignVault API currently authenticates via JWT bearer tokens on
- * document endpoints. Set SIGNVAULT_API_KEY to a JWT access token obtained
+ * NOTE: The Signori API currently authenticates via JWT bearer tokens on
+ * document endpoints. Set SIGNORI_API_KEY to a JWT access token obtained
  * from POST /api/v1/auth/login. API key bearer auth will be supported once
  * the backend wires API key lookup into the auth middleware.
  *
  * Run against local dev:
- *   SIGNVAULT_API_KEY=$(curl -s -X POST http://localhost:8000/api/v1/auth/login \
+ *   SIGNORI_API_KEY=$(curl -s -X POST http://localhost:8000/api/v1/auth/login \
  *     -H "Content-Type: application/json" \
  *     -d '{"email":"you@example.com","password":"yourpassword"}' \
  *     | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['access_token'])") \
- *   SIGNVAULT_BASE_URL=http://localhost:8000 \
+ *   SIGNORI_BASE_URL=http://localhost:8000 \
  *   vendor/bin/phpunit --testsuite Integration
  *
  * Run against staging:
- *   SIGNVAULT_API_KEY=<jwt> SIGNVAULT_BASE_URL=https://api-staging.kyhome.co.in \
+ *   SIGNORI_API_KEY=<jwt> SIGNORI_BASE_URL=https://api-staging.kyhome.co.in \
  *     vendor/bin/phpunit --testsuite Integration
  *
  * Each test cleans up after itself (void the created documents).
  */
 final class DocumentsIntegrationTest extends TestCase
 {
-    private static SignVault $sv;
+    private static Signori $sv;
 
     public static function setUpBeforeClass(): void
     {
-        $apiKey  = getenv('SIGNVAULT_API_KEY');
-        $baseUrl = getenv('SIGNVAULT_BASE_URL') ?: 'http://localhost:8000';
+        $apiKey  = getenv('SIGNORI_API_KEY');
+        $baseUrl = getenv('SIGNORI_BASE_URL') ?: 'http://localhost:8000';
 
         if (! $apiKey) {
             return;
         }
 
-        self::$sv = SignVault::client((string) $apiKey, $baseUrl);
+        self::$sv = Signori::client((string) $apiKey, $baseUrl);
     }
 
     protected function setUp(): void
     {
-        if (! getenv('SIGNVAULT_API_KEY')) {
-            $this->markTestSkipped('SIGNVAULT_API_KEY not set — skipping integration tests.');
+        if (! getenv('SIGNORI_API_KEY')) {
+            $this->markTestSkipped('SIGNORI_API_KEY not set — skipping integration tests.');
         }
     }
 
@@ -136,12 +136,12 @@ final class DocumentsIntegrationTest extends TestCase
         $doc    = $this->uploadTestDocument('Integration: Signer Test');
         $signer = self::$sv->signers->add(
             $doc->id,
-            'integration-test@signvault-sdk.invalid',
+            'integration-test@signori-sdk.invalid',
             'SDK Test Signer',
         );
 
         $this->assertInstanceOf(SignerResponse::class, $signer);
-        $this->assertSame('integration-test@signvault-sdk.invalid', $signer->email);
+        $this->assertSame('integration-test@signori-sdk.invalid', $signer->email);
         $this->assertSame('pending', $signer->status);
 
         self::$sv->documents->void($doc->id);

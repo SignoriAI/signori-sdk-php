@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Resources;
+namespace Signori\Resources;
 
-use SignVault\Responses\AuditTrailResponse;
-use SignVault\Responses\DocumentFieldResponse;
-use SignVault\Responses\DocumentResponse;
-use SignVault\Responses\PaginatedResponse;
-use SignVault\Responses\SignerResponse;
-use SignVault\SignVault;
+use Signori\Responses\AuditTrailResponse;
+use Signori\Responses\DocumentFieldResponse;
+use Signori\Responses\DocumentResponse;
+use Signori\Responses\PaginatedResponse;
+use Signori\Responses\SignerResponse;
+use Signori\Signori;
 
 /**
  * Document operations.
  */
 final class Documents
 {
-    public function __construct(private readonly SignVault $client) {}
+    public function __construct(private readonly Signori $client) {}
 
     /**
      * Upload a PDF and create a document.

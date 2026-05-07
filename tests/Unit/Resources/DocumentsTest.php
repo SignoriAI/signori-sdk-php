@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SignVault\Tests\Unit\Resources;
+namespace Signori\Tests\Unit\Resources;
 
-use SignVault\Responses\DocumentFieldResponse;
-use SignVault\Responses\DocumentResponse;
-use SignVault\Responses\PaginatedResponse;
-use SignVault\Responses\AuditTrailResponse;
-use SignVault\Tests\UnitTestCase;
+use Signori\Responses\DocumentFieldResponse;
+use Signori\Responses\DocumentResponse;
+use Signori\Responses\PaginatedResponse;
+use Signori\Responses\AuditTrailResponse;
+use Signori\Tests\UnitTestCase;
 
 final class DocumentsTest extends UnitTestCase
 {
