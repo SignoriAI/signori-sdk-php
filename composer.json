@@ -4,7 +4,7 @@
     "type": "library",
     "license": "MIT",
     "keywords": ["signori", "e-signature", "esign", "pdf", "signing"],
-    "homepage": "https://github.com/kmorganisation/signori-sdk-php",
+    "homepage": "https://github.com/SignoriAI/signori-sdk-php",
     "authors": [
         {
             "name": "Signori",
