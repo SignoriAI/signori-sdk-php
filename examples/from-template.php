@@ -4,7 +4,7 @@
  * Example: Create a document from a saved template, pre-fill fields, send.
  *
  * Run:
- *   SIGNORI_API_KEY=your-key php examples/from-template.php
+ *   SIGNORI_API_KEY=your-key SIGNORI_BASE_URL=https://signori.your-company.example php examples/from-template.php
  */
 
 declare(strict_types=1);

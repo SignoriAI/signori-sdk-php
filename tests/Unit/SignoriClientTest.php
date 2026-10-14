@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Signori\Tests\Unit;
 
 use Signori\Exceptions\AuthException;
+use Signori\Exceptions\ConfigurationException;
 use Signori\Exceptions\NotFoundException;
 use Signori\Exceptions\RateLimitException;
 use Signori\Exceptions\ValidationException;
@@ -22,18 +23,68 @@ final class SignoriClientTest extends UnitTestCase
 {
     // ── Construction ─────────────────────────────────────────────────────────
 
+    protected function tearDown(): void
+    {
+        putenv('SIGNORI_API_KEY');
+        putenv('SIGNORI_BASE_URL');
+        parent::tearDown();
+    }
+
     public function test_throws_when_api_key_empty(): void
     {
-        $this->expectException(SignoriException::class);
-        Signori::client('');
+        $this->expectException(ConfigurationException::class);
+        Signori::client('', 'https://api.test');
     }
 
     public function test_reads_api_key_from_environment(): void
     {
         putenv('SIGNORI_API_KEY=env-key-xyz');
-        $sv = Signori::client();
+        $sv = Signori::client(baseUrl: 'https://api.test');
         $this->assertInstanceOf(Signori::class, $sv);
-        putenv('SIGNORI_API_KEY'); // unset
+    }
+
+    public function test_throws_when_base_url_missing(): void
+    {
+        putenv('SIGNORI_BASE_URL');
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('SIGNORI_BASE_URL');
+        Signori::client('key');
+    }
+
+    public function test_throws_when_base_url_empty_string(): void
+    {
+        putenv('SIGNORI_BASE_URL=');
+        $this->expectException(ConfigurationException::class);
+        Signori::client('key');
+    }
+
+    public function test_throws_when_explicit_base_url_blank(): void
+    {
+        putenv('SIGNORI_BASE_URL=https://from-env.test');
+        $this->expectException(ConfigurationException::class);
+        Signori::client('key', '  ');
+    }
+
+    public function test_throws_when_base_url_has_no_scheme(): void
+    {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('http:// or https://');
+        Signori::client('key', 'signori.internal');
+    }
+
+    public function test_configuration_exception_is_a_signori_exception(): void
+    {
+        $this->expectException(SignoriException::class);
+        Signori::client('key', '');
+    }
+
+    public function test_explicit_base_url_wins_over_environment(): void
+    {
+        putenv('SIGNORI_BASE_URL=https://from-env.test');
+        $http = new MockHttpClient();
+        $http->enqueue(200, $this->envelope($this->documentFixture()));
+        Signori::client('key', 'https://explicit.test')->withHttpClient($http)->documents->get('d1');
+        $this->assertStringStartsWith('https://explicit.test/', $http->lastRequest()['url']);
     }
 
     public function test_reads_base_url_from_environment(): void
@@ -45,8 +96,6 @@ final class SignoriClientTest extends UnitTestCase
         $sv = Signori::client()->withHttpClient($http);
         $sv->documents->get('doc_1');
         $this->assertStringStartsWith('https://custom.api', $http->lastRequest()['url']);
-        putenv('SIGNORI_API_KEY');
-        putenv('SIGNORI_BASE_URL');
     }
 
     // ── Authorization header ──────────────────────────────────────────────────

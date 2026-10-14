@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Signori\Resources;
 
+use Signori\Exceptions\NotFoundException;
 use Signori\Responses\SignerResponse;
 use Signori\Signori;
 
 final class Signers
 {
+    /** Largest page the API accepts for ``GET /documents/{id}/signers``. */
+    private const PAGE_SIZE = 100;
+
     public function __construct(private readonly Signori $client) {}
 
     /**
@@ -39,12 +43,48 @@ final class Signers
     }
 
     /**
-     * Get a single signer by ID.
+     * List every signer on a document, following ``next_cursor`` until the
+     * last page.
+     *
+     * @return list<SignerResponse>
+     */
+    public function list(string $documentId): array
+    {
+        $signers = [];
+        $cursor  = null;
+        do {
+            $data = $this->client->get("/api/v1/documents/{$documentId}/signers", [
+                'limit'  => self::PAGE_SIZE,
+                'cursor' => $cursor,
+            ]);
+            $items = is_array($data['items'] ?? null) ? $data['items'] : [];
+            foreach ($items as $item) {
+                $signers[] = SignerResponse::from($item);
+            }
+            $next   = $data['next_cursor'] ?? null;
+            $cursor = is_string($next) && $next !== '' && $next !== $cursor ? $next : null;
+        } while ($cursor !== null);
+
+        return $signers;
+    }
+
+    /**
+     * Get a single signer on a document.
+     *
+     * The API has no single-signer route, so this lists the document's
+     * signers and picks the matching id.
+     *
+     * @throws NotFoundException when the document has no signer with that id.
      */
     public function get(string $documentId, string $signerId): SignerResponse
     {
-        $data = $this->client->get("/api/v1/documents/{$documentId}/signers/{$signerId}");
-        return SignerResponse::from($data);
+        foreach ($this->list($documentId) as $signer) {
+            if ($signer->id === $signerId) {
+                return $signer;
+            }
+        }
+
+        throw new NotFoundException("Signer {$signerId} not found on document {$documentId}", 404);
     }
 
     /**

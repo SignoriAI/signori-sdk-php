@@ -44,19 +44,21 @@ echo "Sent! Document ID: {$doc->id}\n";
 ```bash
 # .env (copy from .env.example)
 SIGNORI_API_KEY=sv_live_your_api_key
-SIGNORI_BASE_URL=https://api.signori.ai   # optional, this is the default
+SIGNORI_BASE_URL=https://signori.your-company.example   # required, there is no default
 ```
 
 ```php
-$sv = Signori::client(); // reads SIGNORI_API_KEY automatically
+$sv = Signori::client(); // reads SIGNORI_API_KEY and SIGNORI_BASE_URL
 ```
+
+The base URL is required. If neither `$baseUrl` nor `SIGNORI_BASE_URL` is set, `Signori::client()` throws `Signori\Exceptions\ConfigurationException`.
 
 ### Explicitly
 
 ```php
 $sv = Signori::client(
     apiKey:     'sv_live_your_api_key',
-    baseUrl:    'https://api.signori.ai', // or http://localhost:8000 for local dev
+    baseUrl:    'https://signori.your-company.example', // or http://localhost:8000 for local dev
     timeout:    30,                          // seconds
     maxRetries: 1,                           // auto-retry on 429 / 5xx
 );
@@ -132,6 +134,7 @@ $doc = $sv->documents->send(
 ### Void
 
 ```php
+// DELETE /api/v1/documents/{id}?reason=...  (reason is optional)
 $sv->documents->void($doc->id, 'Sent to wrong recipient');
 ```
 
@@ -173,6 +176,10 @@ $signer = $sv->signers->add(
     phone:        '+14155550100',
     signingOrder: 1,
 );
+
+// List all signers, or fetch one (looked up from the document's signer list)
+$all    = $sv->signers->list($doc->id);
+$signer = $sv->signers->get($doc->id, $signer->id);
 
 // Send reminder
 $sv->signers->remind($doc->id, $signer->id);
@@ -225,6 +232,7 @@ $wh = $sv->webhooks->create(
         'signer.signed',
         'signer.declined',
     ],
+    secret: getenv('SIGNORI_WEBHOOK_SECRET'), // 8-255 chars, signs X-Signori-Signature
 );
 echo "Webhook ID: {$wh->id}\n";
 ```

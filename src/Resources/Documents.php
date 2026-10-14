@@ -55,6 +55,7 @@ final class Documents
      * @param  array{
      *     status?: string,
      *     document_type?: string,
+     *     label?: string,
      *     search?: string,
      *     limit?: int,
      *     cursor?: string,
@@ -106,13 +107,17 @@ final class Documents
     }
 
     /**
-     * Void a document — cancels signing and notifies signers.
+     * Void a document — cancels signing and notifies pending signers.
+     *
+     * Calls ``DELETE /api/v1/documents/{id}``. The reason is sent as the
+     * ``reason`` query parameter; when omitted the API records
+     * "Voided by user".
      */
     public function void(string $id, ?string $reason = null): DocumentResponse
     {
-        $data = $this->client->post(
-            "/api/v1/documents/{$id}/void",
-            $reason ? ['reason' => $reason] : [],
+        $data = $this->client->delete(
+            "/api/v1/documents/{$id}",
+            $reason !== null && $reason !== '' ? ['reason' => $reason] : [],
         );
         return DocumentResponse::from($data);
     }
@@ -151,15 +156,13 @@ final class Documents
     }
 
     /**
-     * List signers on a document.
+     * List every signer on a document (follows pagination).
      *
      * @return SignerResponse[]
      */
     public function signers(string $id): array
     {
-        $data = $this->client->get("/api/v1/documents/{$id}/signers");
-        $items = is_array($data['items'] ?? null) ? $data['items'] : $data;
-        return array_map(fn(array $s) => SignerResponse::from($s), $items);
+        return $this->client->signers->list($id);
     }
 
     /**
