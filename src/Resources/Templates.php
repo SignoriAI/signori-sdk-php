@@ -46,8 +46,9 @@ final class Templates
         array  $fieldValues = [],
         array  $signers     = [],
     ): DocumentResponse {
+        // field_values must be a JSON object; an empty PHP array would encode as [].
         $data = $this->client->post("/api/v1/templates/{$templateId}/documents", [
-            'field_values' => $fieldValues,
+            'field_values' => (object) $fieldValues,
             'signers'      => $signers,
         ]);
 
@@ -61,8 +62,9 @@ final class Templates
      */
     public function prefillFromContact(string $templateId, string $contactId): array
     {
-        return $this->client->post("/api/v1/templates/{$templateId}/prefill", [
+        $data = $this->client->post("/api/v1/templates/{$templateId}/prefill", [
             'contact_id' => $contactId,
         ]);
+        return is_array($data['field_values'] ?? null) ? $data['field_values'] : [];
     }
 }

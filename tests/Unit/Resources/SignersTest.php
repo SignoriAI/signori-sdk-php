@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Signori\Tests\Unit\Resources;
 
+use Signori\Exceptions\NotFoundException;
 use Signori\Responses\SignerResponse;
 use Signori\Tests\UnitTestCase;
 
@@ -88,10 +89,48 @@ final class SignersTest extends UnitTestCase
         $this->assertSame('DELETE', $this->http->lastRequest()['method']);
     }
 
+    public function test_get_lists_document_signers_and_returns_match(): void
+    {
+        $this->http->enqueue(200, $this->paginatedEnvelope([
+            $this->signerFixture(['id' => 'sig_other', 'email' => 'other@example.com']),
+            $this->signerFixture(['id' => 'sig_abc123', 'email' => 'alice@example.com']),
+        ]));
+
+        $signer = $this->sv->signers->get('doc_abc123', 'sig_abc123');
+
+        $req = $this->http->lastRequest();
+        $this->assertSame('GET', $req['method']);
+        $this->assertSame('https://api.test/api/v1/documents/doc_abc123/signers?limit=100', $req['url']);
+        $this->assertSame('sig_abc123', $signer->id);
+        $this->assertSame('alice@example.com', $signer->email);
+    }
+
+    public function test_get_searches_later_pages(): void
+    {
+        $this->http->enqueue(200, $this->paginatedEnvelope([$this->signerFixture(['id' => 'sig_a'])], 2, 'sig_a'));
+        $this->http->enqueue(200, $this->paginatedEnvelope([$this->signerFixture(['id' => 'sig_b'])], 2));
+
+        $signer = $this->sv->signers->get('doc_abc123', 'sig_b');
+
+        $this->assertSame('sig_b', $signer->id);
+        $this->assertSame(2, $this->http->requestCount());
+        $this->assertStringContainsString('cursor=sig_a', $this->http->requestAt(1)['url']);
+    }
+
+    public function test_get_throws_not_found_when_signer_missing(): void
+    {
+        $this->http->enqueue(200, $this->paginatedEnvelope([$this->signerFixture(['id' => 'sig_other'])]));
+
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessage('Signer sig_missing not found on document doc_abc123');
+
+        $this->sv->signers->get('doc_abc123', 'sig_missing');
+    }
+
     public function test_signer_response_maps_signed_at(): void
     {
         $fixture = $this->signerFixture(['signed_at' => '2026-03-01T12:00:00Z', 'status' => 'signed']);
-        $this->http->enqueue(200, $this->envelope($fixture));
+        $this->http->enqueue(200, $this->paginatedEnvelope([$fixture]));
 
         $signer = $this->sv->signers->get('doc_abc123', 'sig_abc123');
 

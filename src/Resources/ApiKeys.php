@@ -14,19 +14,28 @@ final class ApiKeys
 
     /**
      * Create a new API key. The secret value is only returned once — store it.
+     *
+     * @param  string[] $scopes  Omit to let the API apply its default (["read"]).
      */
-    public function create(string $name): ApiKeyResponse
+    public function create(string $name, array $scopes = []): ApiKeyResponse
     {
-        $data = $this->client->post('/api/v1/api-keys', ['name' => $name]);
+        $body = ['name' => $name];
+        if ($scopes !== []) {
+            $body['scopes'] = array_values($scopes);
+        }
+        $data = $this->client->post('/api/v1/api-keys', $body);
         return ApiKeyResponse::from($data);
     }
 
     /**
      * List all API keys for the company (secrets are masked).
      */
-    public function list(): PaginatedResponse
+    public function list(int $limit = 20, ?string $cursor = null): PaginatedResponse
     {
-        $data = $this->client->get('/api/v1/api-keys');
+        $data = $this->client->get('/api/v1/api-keys', [
+            'limit'  => $limit,
+            'cursor' => $cursor,
+        ]);
         return PaginatedResponse::from($data, fn(array $k) => ApiKeyResponse::from($k));
     }
 

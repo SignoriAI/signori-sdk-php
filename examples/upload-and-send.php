@@ -4,7 +4,7 @@
  * Example: Upload a PDF and send it for signing.
  *
  * Run:
- *   SIGNORI_API_KEY=your-key php examples/upload-and-send.php
+ *   SIGNORI_API_KEY=your-key SIGNORI_BASE_URL=https://signori.your-company.example php examples/upload-and-send.php
  */
 
 declare(strict_types=1);

@@ -67,7 +67,7 @@ final class TemplatesTest extends UnitTestCase
         $req = $this->http->lastRequest();
         $this->assertSame('POST', $req['method']);
         $this->assertStringContainsString('tpl_abc123/documents', $req['url']);
-        $this->assertSame('Acme Corp', $req['json']['field_values']['party_name']);
+        $this->assertSame('Acme Corp', $req['json']['field_values']->party_name);
         $this->assertCount(1, $req['json']['signers']);
     }
 
@@ -78,5 +78,25 @@ final class TemplatesTest extends UnitTestCase
         $doc = $this->sv->templates->createDocument('tpl_abc123');
 
         $this->assertInstanceOf(DocumentResponse::class, $doc);
+    }
+
+    public function test_create_document_encodes_empty_field_values_as_json_object(): void
+    {
+        $this->http->enqueue(200, $this->envelope($this->documentFixture()));
+
+        $this->sv->templates->createDocument('tpl_1');
+
+        $json = json_encode($this->http->lastRequest()['json'], JSON_THROW_ON_ERROR);
+        $this->assertSame('{"field_values":{},"signers":[]}', $json);
+    }
+
+    public function test_prefill_returns_field_value_map(): void
+    {
+        $this->http->enqueue(200, $this->envelope(['field_values' => ['party_name' => 'Acme Corp']]));
+
+        $values = $this->sv->templates->prefillFromContact('tpl_1', 'ct_1');
+
+        $this->assertSame(['party_name' => 'Acme Corp'], $values);
+        $this->assertSame(['contact_id' => 'ct_1'], $this->http->lastRequest()['json']);
     }
 }

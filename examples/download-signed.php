@@ -4,7 +4,7 @@
  * Example: Download the signed PDF once a document is completed.
  *
  * Run:
- *   SIGNORI_API_KEY=your-key php examples/download-signed.php doc_your_id_here
+ *   SIGNORI_API_KEY=your-key SIGNORI_BASE_URL=https://signori.your-company.example php examples/download-signed.php doc_your_id_here
  */
 
 declare(strict_types=1);

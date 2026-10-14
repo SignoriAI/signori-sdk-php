@@ -2,6 +2,24 @@
 
 All notable changes to the Signori PHP SDK.
 
+## [Unreleased]
+
+### Breaking
+- The base URL is required. The `https://api.signori.ai` default is gone; pass `$baseUrl` to `Signori::client()` or set `SIGNORI_BASE_URL`, otherwise `ConfigurationException` is thrown.
+- `Webhooks::create()` takes a required `$secret` argument; the API rejects webhooks without one.
+- `Templates::prefillFromContact()` returns the field-value map itself instead of `['field_values' => [...]]`.
+
+### Fixed
+- `Documents::void()` calls `DELETE /api/v1/documents/{id}` with `reason` as a query parameter (the old `POST /documents/{id}/void` route does not exist).
+- `Signers::get()` looks the signer up in `GET /api/v1/documents/{id}/signers` (there is no single-signer route).
+- `Documents::signers()` follows pagination instead of returning only the first 20 signers.
+- `Templates::createDocument()` sends empty `field_values` as a JSON object, not `[]`.
+
+### Added
+- `ConfigurationException` (extends `SignoriException`), also thrown for an empty API key.
+- `Signers::list()`; optional `$scopes` on `ApiKeys::create()`; `$limit` / `$cursor` on `Webhooks::list()` and `ApiKeys::list()`.
+- Route-table test that pins every SDK call to an API route.
+
 ## [1.0.0] — 2026-03-27
 
 Initial release.

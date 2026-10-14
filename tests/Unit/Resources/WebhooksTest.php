@@ -18,6 +18,7 @@ final class WebhooksTest extends UnitTestCase
         $this->sv->webhooks->create(
             'https://example.com/webhook',
             ['document.completed', 'signer.signed'],
+            'whsec_test_secret',
         );
 
         $req = $this->http->lastRequest();
@@ -25,13 +26,14 @@ final class WebhooksTest extends UnitTestCase
         $this->assertStringContainsString('/api/v1/webhooks', $req['url']);
         $this->assertSame('https://example.com/webhook', $req['json']['url']);
         $this->assertSame(['document.completed', 'signer.signed'], $req['json']['events']);
+        $this->assertSame('whsec_test_secret', $req['json']['secret']);
     }
 
     public function test_create_returns_webhook_response(): void
     {
         $this->http->enqueue(200, $this->envelope($this->webhookFixture()));
 
-        $wh = $this->sv->webhooks->create('https://example.com/wh', ['document.completed']);
+        $wh = $this->sv->webhooks->create('https://example.com/wh', ['document.completed'], 'whsec_test_secret');
 
         $this->assertInstanceOf(WebhookResponse::class, $wh);
         $this->assertSame('wh_abc123', $wh->id);
@@ -133,5 +135,14 @@ final class WebhooksTest extends UnitTestCase
     {
         $this->expectException(\Signori\Exceptions\SignoriException::class);
         Webhooks::constructEvent('not-json');
+    }
+
+    public function test_list_passes_pagination(): void
+    {
+        $this->http->enqueue(200, $this->paginatedEnvelope([]));
+
+        $this->sv->webhooks->list(50, 'wh_9');
+
+        $this->assertSame('https://api.test/api/v1/webhooks?limit=50&cursor=wh_9', $this->http->lastRequest()['url']);
     }
 }

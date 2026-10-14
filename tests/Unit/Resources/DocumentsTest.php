@@ -160,16 +160,40 @@ final class DocumentsTest extends UnitTestCase
 
     // ── void ──────────────────────────────────────────────────────────────────
 
-    public function test_void_sends_post_to_void_endpoint(): void
+    public function test_void_sends_delete_with_reason_query(): void
     {
         $this->http->enqueue(200, $this->envelope($this->documentFixture(['status' => 'voided'])));
 
         $doc = $this->sv->documents->void('doc_abc123', 'Duplicate sent');
 
         $req = $this->http->lastRequest();
-        $this->assertStringContainsString('doc_abc123/void', $req['url']);
-        $this->assertSame('Duplicate sent', $req['json']['reason']);
+        $this->assertSame('DELETE', $req['method']);
+        $this->assertSame('https://api.test/api/v1/documents/doc_abc123?reason=Duplicate+sent', $req['url']);
+        $this->assertSame([], $req['json']);
         $this->assertSame('voided', $doc->status);
+    }
+
+    public function test_void_without_reason_sends_no_query(): void
+    {
+        $this->http->enqueue(200, $this->envelope($this->documentFixture(['status' => 'voided'])));
+
+        $this->sv->documents->void('doc_abc123');
+
+        $req = $this->http->lastRequest();
+        $this->assertSame('DELETE', $req['method']);
+        $this->assertSame('https://api.test/api/v1/documents/doc_abc123', $req['url']);
+    }
+
+    public function test_signers_follows_pagination(): void
+    {
+        $this->http->enqueue(200, $this->paginatedEnvelope([$this->signerFixture(['id' => 'sig_1'])], 2, 'sig_1'));
+        $this->http->enqueue(200, $this->paginatedEnvelope([$this->signerFixture(['id' => 'sig_2'])], 2));
+
+        $signers = $this->sv->documents->signers('doc_abc123');
+
+        $this->assertSame(['sig_1', 'sig_2'], array_map(fn ($s) => $s->id, $signers));
+        $this->assertSame('https://api.test/api/v1/documents/doc_abc123/signers?limit=100', $this->http->requestAt(0)['url']);
+        $this->assertSame('https://api.test/api/v1/documents/doc_abc123/signers?limit=100&cursor=sig_1', $this->http->requestAt(1)['url']);
     }
 
     // ── audit trail ───────────────────────────────────────────────────────────

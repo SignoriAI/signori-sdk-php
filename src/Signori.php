@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Signori;
 
-use Signori\Exceptions\SignoriException;
+use Signori\Exceptions\ConfigurationException;
 use Signori\HttpClient\CurlHttpClient;
 use Signori\HttpClient\HttpClientInterface;
 use Signori\Resources\ApiKeys;
@@ -19,7 +19,7 @@ use Signori\Resources\Webhooks;
  *
  * Quick start:
  *
- *   $sv = Signori::client('your-api-key');
+ *   $sv = Signori::client('your-api-key', 'https://signori.internal.example');
  *   $doc = $sv->documents->upload('/path/to/contract.pdf', 'Master Services Agreement');
  *   $sv->documents->send($doc->id, [
  *       ['email' => 'alice@example.com', 'full_name' => 'Alice Smith'],
@@ -48,11 +48,23 @@ final class Signori
         int $maxRetries,
     ) {
         if ($apiKey === '') {
-            throw new SignoriException('API key must not be empty. Pass it explicitly or set SIGNORI_API_KEY.');
+            throw new ConfigurationException('API key must not be empty. Pass it explicitly or set SIGNORI_API_KEY.');
+        }
+
+        $baseUrl = rtrim(trim($baseUrl), '/');
+        if ($baseUrl === '') {
+            throw new ConfigurationException(
+                'Signori base URL is not configured. Pass $baseUrl to Signori::client() or set SIGNORI_BASE_URL.',
+            );
+        }
+        if (! preg_match('#^https?://[^/]#i', $baseUrl)) {
+            throw new ConfigurationException(
+                "Signori base URL must start with http:// or https://, got \"{$baseUrl}\".",
+            );
         }
 
         $this->apiKey    = $apiKey;
-        $this->baseUrl   = rtrim($baseUrl, '/');
+        $this->baseUrl   = $baseUrl;
         $this->http      = $http;
         $this->timeout   = $timeout;
         $this->maxRetries = $maxRetries;
@@ -69,10 +81,12 @@ final class Signori
      * Create a client from explicit values or environment variables.
      *
      * @param  string|null $apiKey   Bearer token. Falls back to SIGNORI_API_KEY env var.
-     * @param  string|null $baseUrl  API base URL. Falls back to SIGNORI_BASE_URL env var,
-     *                               then https://api.signori.ai.
+     * @param  string|null $baseUrl  API base URL (required). Falls back to SIGNORI_BASE_URL env var;
+     *                               there is no default.
      * @param  int         $timeout  Request timeout in seconds. Default 30.
      * @param  int         $maxRetries Auto-retry count for 429 / network errors. Default 1.
+     *
+     * @throws ConfigurationException when the API key or base URL is missing.
      */
     public static function client(
         ?string $apiKey = null,
@@ -81,8 +95,7 @@ final class Signori
         int $maxRetries = 1,
     ): self {
         $resolvedKey = $apiKey ?? (string) getenv('SIGNORI_API_KEY');
-        $resolvedUrl = $baseUrl
-            ?? ((string) getenv('SIGNORI_BASE_URL') ?: 'https://api.signori.ai');
+        $resolvedUrl = $baseUrl ?? (string) getenv('SIGNORI_BASE_URL');
 
         return new self(
             $resolvedKey,
@@ -160,9 +173,9 @@ final class Signori
     }
 
     /** @internal */
-    public function delete(string $path): array
+    public function delete(string $path, array $query = []): array
     {
-        return $this->request('DELETE', $path);
+        return $this->request('DELETE', $path, query: $query);
     }
 
     /**

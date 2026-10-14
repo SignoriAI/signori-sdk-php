@@ -17,12 +17,15 @@ final class Webhooks
      * Register a new webhook endpoint.
      *
      * @param  string[] $events  e.g. ['document.completed', 'signer.signed']
+     * @param  string   $secret  HMAC signing secret (8–255 chars) used for
+     *                           the X-Signori-Signature header. Required by the API.
      */
-    public function create(string $url, array $events): WebhookResponse
+    public function create(string $url, array $events, string $secret): WebhookResponse
     {
         $data = $this->client->post('/api/v1/webhooks', [
             'url'    => $url,
             'events' => $events,
+            'secret' => $secret,
         ]);
         return WebhookResponse::from($data);
     }
@@ -30,14 +33,19 @@ final class Webhooks
     /**
      * List registered webhooks.
      */
-    public function list(): PaginatedResponse
+    public function list(int $limit = 20, ?string $cursor = null): PaginatedResponse
     {
-        $data = $this->client->get('/api/v1/webhooks');
+        $data = $this->client->get('/api/v1/webhooks', [
+            'limit'  => $limit,
+            'cursor' => $cursor,
+        ]);
         return PaginatedResponse::from($data, fn(array $w) => WebhookResponse::from($w));
     }
 
     /**
-     * Update a webhook (URL, events, active status).
+     * Update a webhook.
+     *
+     * @param  array{url?: string, events?: string[], secret?: string, is_active?: bool} $changes
      */
     public function update(string $id, array $changes): WebhookResponse
     {
